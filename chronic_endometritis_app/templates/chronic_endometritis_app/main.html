@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction of Chronic endometritis</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --primary-hover: #004494;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .form-container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        h2, h3 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        /* Стилизуем элементы, которые генерирует Django (as_p) */
+        form p {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        form p:last-of-type {
+            border-bottom: none;
+        }
+
+        form label {
+            flex: 1;
+            font-weight: 500;
+            font-size: 15px;
+            padding-right: 15px;
+        }
+
+        form input[type=number], 
+        form input[type=text] {
+            width: 120px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
+        }
+
+        /* Кнопка отправки */
+        button[type="submit"] {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button[type="submit"]:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        button[type="submit"]:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Спиннер загрузки */
+        .loading-container {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Блок результатов */
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-low { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .result-high { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+        .result-error { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+    </style>
+</head>
+<body>
+
+    <div id="ml_model-form-container" class="form-container">
+        <h3>Prediction of Chronic endometritis</h3>
+        
+        <form id="ml_model-form">
+            {% csrf_token %}
+            {{ ml_model_form.as_p }}
+            <button type="submit" id="submit-btn">Calculate the probability</button>
+        </form>
+
+        <div id="ml_model-loading" class="loading-container">
+            <div class="spinner"></div>
+            <span style="color: #666; font-size: 14px;">Data processing...</span>
+        </div>
+
+        <div id="ml_model-result" class="result-container"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('ml_model-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const loadingDiv = document.getElementById('ml_model-loading');
+        const resultDiv = document.getElementById('ml_model-result');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            make_prediction();
+        });
+
+        function setUIState(isPredicting) {
+            submitBtn.disabled = isPredicting;
+            loadingDiv.style.display = isPredicting ? 'block' : 'none';
+            if (isPredicting) {
+                resultDiv.style.display = 'none';
+            }
+        }
+
+        function showResult(message, type) {
+            resultDiv.textContent = message;
+            // Устанавливаем соответствующий класс (result-low, result-high, result-error)
+            resultDiv.className = `result-container result-${type}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function make_prediction() {
+            // FormData автоматически собирает все поля формы (по их атрибутам name)
+            const formData = new FormData(form);
+            const params = new URLSearchParams();
+            
+            // Исключаем csrf_token из URL-параметров GET-запроса, он там не нужен
+            for (const [key, value] of formData.entries()) {
+                if (key !== 'csrfmiddlewaretoken') {
+                    params.append(key, value);
+                }
+            }
+
+            setUIState(true);
+
+            fetch(`/chronic_endometritis_ml_model/?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Server error");
+                    return response.json();
+                })
+                .then(data => {
+                    const probability = (data.probability[0][1] * 100).toFixed(2);
+                    const isHigh = probability >= 70;
+                    
+                    const message = `The probability of CE: ${probability}%`;
+                    const type = isHigh ? 'high' : 'low';
+                    
+                    showResult(message, type);
+                })
+                .catch(error => {
+                    console.error("Prediction error:", error);
+                    showResult("Network error or incorrect data. Check the form.", 'error');
+                })
+                .finally(() => {
+                    setUIState(false);
+                });
+        }
+    </script>
+</body>
+</html>
