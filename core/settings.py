@@ -27,6 +27,8 @@ SECRET_KEY = 'django-insecure-vz)+bm3kdgr!-#x%usdt26t*g1!q7@c0wv39y#gc!$c=9^a#e0
 DEBUG = False  # Нужно сменить на False
 
 ALLOWED_HOSTS = [
+     'localhost',
+     '127.0.0.1',
      'dev.sbamsr.irk.ru',
      '84.237.24.66'
     ]  # Нужно указать IP сервера или домен

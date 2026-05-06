@@ -6,11 +6,12 @@ After=network.target
 # Пользователь, от имени которого будет работать приложение
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/Chronic-Endometritis-Application
+# Путь к директории проекта (скорректируйте под своё расположение)
+WorkingDirectory=/var/www/Chronic-Endometritis-Application-main
 # Путь к gunicorn внутри созданного виртуального окружения
-ExecStart=/var/www/Chronic-Endometritis-Application/venv/bin/gunicorn \
+ExecStart=/var/www/Chronic-Endometritis-Application-main/venv/bin/gunicorn \
     --workers 3 \
-    --bind unix:/var/www/Chronic-Endometritis-Application/app.sock \
+    --bind unix:/var/www/Chronic-Endometritis-Application-main/app.sock \
     core.wsgi:application
 
 # Автоматический перезапуск при сбое
