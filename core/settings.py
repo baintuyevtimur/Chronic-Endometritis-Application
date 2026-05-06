@@ -24,17 +24,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-vz)+bm3kdgr!-#x%usdt26t*g1!q7@c0wv39y#gc!$c=9^a#e0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Нужно сменить на False
+DEBUG = False  # Нужно сменить на False
 
-ALLOWED_HOSTS = []  # Нужно указать IP сервера или домен
+ALLOWED_HOSTS = [
+     'dev.sbamsr.irk.ru',
+     '84.237.24.66'
+    ]  # Нужно указать IP сервера или домен
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # 'django.contrib.auth',
-    # 'django.contrib.contenttypes',
+    'django.contrib.contenttypes',
     # 'django.contrib.sessions',
     # 'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -61,6 +64,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.static',
                 # 'django.contrib.auth.context_processors.auth',
                 # 'django.contrib.messages.context_processors.messages',
             ],

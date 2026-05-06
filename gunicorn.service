@@ -1,0 +1,20 @@
+[Unit]
+Description=Gunicorn instance to serve Chronic Endometritis Application
+After=network.target
+
+[Service]
+# Пользователь, от имени которого будет работать приложение
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/Chronic-Endometritis-Application
+# Путь к gunicorn внутри созданного виртуального окружения
+ExecStart=/var/www/Chronic-Endometritis-Application/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/var/www/Chronic-Endometritis-Application/app.sock \
+    core.wsgi:application
+
+# Автоматический перезапуск при сбое
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
