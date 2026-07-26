@@ -1,117 +1,218 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction of Chronic endometritis</title>
+    <title id="page-title-tag">Калькулятор расчета риска хронического эндометрита</title>
     <style>
         :root {
-            --primary-color: #0056b3;
-            --primary-hover: #004494;
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --border-color: #e0e0e0;
+            --accent: #6fcbd5;
+            --accent-dark: #4fb3be;
+            --logo-color: #7c6757;
+            --bg: #f8f7f5;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --border: #e8e5e0;
+            --input-bg: #f4f3f1;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 0 20px;
-            box-sizing: border-box;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
         }
 
-        .form-container {
-            background: #ffffff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        h2, h3 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 22px;
-        }
-
-        /* Стилизуем элементы, которые генерирует Django (as_p) */
-        form p {
+        /* ---------- Header ---------- */
+        .site-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
+            justify-content: space-between;
+            padding: 22px 64px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
         }
 
-        form p:last-of-type {
-            border-bottom: none;
+        .logo-block {
+            display: flex;
+            align-items: center;
+            gap: 18px;
         }
 
-        form label {
-            flex: 1;
-            font-weight: 500;
-            font-size: 15px;
-            padding-right: 15px;
+        .logo-icon {
+            width: 240px;
+            height: 69px;
+            flex-shrink: 0;
+            object-fit: contain;
         }
 
-        form input[type=number], 
-        form input[type=text] {
-            width: 120px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            text-align: center;
-            transition: border-color 0.2s;
+        .lang-switch {
+            display: flex;
+            border: 1.5px solid var(--accent);
+            border-radius: 0px;
+            overflow: hidden;
         }
 
-        form input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
-        }
-
-        /* Кнопка отправки */
-        button[type="submit"] {
-            background: var(--primary-color);
-            color: #fff;
+        .lang-btn {
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
+            background: #ffffff;
+            color: var(--accent-dark);
+            font-weight: 600;
+            font-size: 14px;
+            padding: 9px 22px;
             cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+
+        .lang-btn.active { background: var(--accent); color: #ffffff; }
+        .lang-btn:not(.active):hover { background: rgba(111, 203, 213, 0.12); }
+
+        /* ---------- Layout ---------- */
+        .page-wrap {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 56px 64px 80px;
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 64px;
+            align-items: start;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin: 0 0 24px;
+        }
+
+        .intro-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 18px;
+        }
+
+        .criteria-list {
+            padding-left: 22px;
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .criteria-list > li { margin-bottom: 6px; }
+
+        .sub-criteria {
+            list-style: none;
+            padding-left: 22px;
+            margin: 8px 0 0;
+        }
+
+        .sub-criteria li {
+            position: relative;
+            margin-bottom: 4px;
+        }
+
+        .sub-criteria li::before {
+            content: "";
+            position: absolute;
+            left: -18px;
+            top: 0.65em;
+            width: 9px;
+            height: 3px;
+            background-color: #6fcbd5;
+            border-radius: 2px;
+        }
+        /* ---------- Calculator card ---------- */
+        .calculator-card {
+            background: var(--card-bg);
+            border-radius: 0px;
+            box-shadow: 0 10px 30px rgba(20, 20, 20, 0.06);
+            padding: 40px 36px;
+        }
+
+        .panel-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 22px;
+        }
+
+        /* Style the Django-rendered {{ form.as_p }} output */
+        #ml_model-form p {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 0 0 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #ml_model-form p:last-of-type {
+            border-bottom: none;
+            margin-bottom: 8px;
+            padding-bottom: 0;
+        }
+
+        #ml_model-form label {
+            font-size: 15px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        #ml_model-form input.field-input {
+            width: 130px;
+            text-align: center;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 0px;
+            background: var(--input-bg);
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        #ml_model-form input.field-input::placeholder { color: #a9a29c; }
+
+        #ml_model-form input.field-input:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 1px;
+            background: #ffffff;
+        }
+
+        .tip { color: var(--accent-dark); cursor: help; font-weight: 700; }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 14px;
+            border: none;
+            border-radius: 0px;
+            background: var(--accent);
+            color: #ffffff;
             font-size: 16px;
             font-weight: 600;
-            width: 100%;
-            margin-top: 10px;
-            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
+            transition: background .15s;
         }
 
-        button[type="submit"]:hover:not(:disabled) {
-            background: var(--primary-hover);
-        }
+        .submit-btn:hover:not(:disabled) { background: var(--accent-dark); }
+        .submit-btn:disabled { background: #cfd8da; cursor: not-allowed; }
 
-        button[type="submit"]:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* Спиннер загрузки */
+        /* ---------- Loading spinner ---------- */
         .loading-container {
             display: none;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 16px;
         }
-        
+
         .spinner {
             width: 24px;
             height: 24px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--primary-color);
+            border: 3px solid #eeeeee;
+            border-top: 3px solid var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 10px auto;
@@ -122,11 +223,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Блок результатов */
+        #loading-text { color: #777777; font-size: 14px; }
+
+        /* ---------- Result block ---------- */
         .result-container {
             margin-top: 20px;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 0px;
             font-size: 16px;
             font-weight: 600;
             text-align: center;
@@ -143,34 +246,176 @@
         .result-high { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
         .result-error { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 
+        @media (max-width: 900px) {
+            .site-header { padding: 18px 24px; }
+            .page-wrap { grid-template-columns: 1fr; padding: 32px 24px 56px; gap: 36px; }
+            .logo-line2 { max-width: 220px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="ml_model-form-container" class="form-container">
-        <h3>Prediction of Chronic endometritis</h3>
-        
-        <form id="ml_model-form">
-            {% csrf_token %}
-            {{ ml_model_form.as_p }}
-            <button type="submit" id="submit-btn">Calculate the probability</button>
-        </form>
-
-        <div id="ml_model-loading" class="loading-container">
-            <div class="spinner"></div>
-            <span style="color: #666; font-size: 14px;">Data processing...</span>
+    <header class="site-header">
+        <div class="logo-block">
+            <!-- TODO: adjust this path to match where the logo svg actually lives
+                 in your static files (e.g. static/images/logo.svg inside your app) -->
+            <img src="{% static 'images/logo-horizontal.svg' %}" alt="FSBSI Scientific Centre for Family Health and Human Reproduction Problems" class="logo-icon">
         </div>
+        <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" class="lang-btn" data-lang="en" id="lang-en">EN</button>
+            <button type="button" class="lang-btn active" data-lang="ru" id="lang-ru">RU</button>
+        </div>
+    </header>
 
-        <div id="ml_model-result" class="result-container"></div>
-    </div>
+    <main class="page-wrap">
+        <section class="info-col">
+            <h1 class="page-title" id="page-title">КАЛЬКУЛЯТОР РАСЧЕТА РИСКА ХРОНИЧЕСКОГО ЭНДОМЕТРИТА</h1>
+            <p class="intro-text" id="intro-text">Настоящий калькулятор возможно использовать для пациенток, клинические и лабораторные показатели которых соответствуют следующим критериям:</p>
+            <ol class="criteria-list">
+                <li id="criteria-1">Возраст 18–45 лет</li>
+                <li id="criteria-2">Нормальная или избыточная масса тела (18,5≤ИМТ≤29,9 кг/м2)</li>
+                <li>
+                    <span id="criteria-3-text">Отсутствие следующих заболеваний и состояний:</span>
+                    <ul class="sub-criteria" id="sub-criteria-list"></ul>
+                </li>
+            </ol>
+        </section>
+
+        <section class="calc-col">
+            <div id="ml_model-form-container" class="calculator-card">
+                <h2 class="panel-title" id="panel-title">Риск хронического эндометрита:</h2>
+
+                <form id="ml_model-form">
+                    {% csrf_token %}
+                    {{ ml_model_form.as_p }}
+                    <button type="submit" id="submit-btn" class="submit-btn">Рассчитать</button>
+                </form>
+
+                <div id="ml_model-loading" class="loading-container">
+                    <div class="spinner"></div>
+                    <span id="loading-text">Обработка данных...</span>
+                </div>
+
+                <div id="ml_model-result" class="result-container"></div>
+            </div>
+        </section>
+    </main>
 
     <script>
+        // ---------- Translations ----------
+        const translations = {
+            ru: {
+                docTitle: 'Калькулятор расчета риска хронического эндометрита',
+                pageTitle: 'КАЛЬКУЛЯТОР РАСЧЕТА РИСКА ХРОНИЧЕСКОГО ЭНДОМЕТРИТА',
+                introText: 'Настоящий калькулятор возможно использовать для пациенток, клинические и лабораторные показатели которых соответствуют следующим критериям:',
+                criteria1: 'Возраст 18–45 лет',
+                criteria2: 'Нормальная или избыточная масса тела (18,5≤ИМТ≤29,9 кг/м2)',
+                criteria3: 'Отсутствие следующих заболеваний и состояний:',
+                subCriteria: [
+                    'Гиперандрогенемия',
+                    'Гиперпролактинемия (пролактин ≥ 726 мМЕ/л)',
+                    'Гипотиреоз (тиреотропный гормон ≥ 4 мМЕ/мл)',
+                    'Неклассическая форма врожденной дисфункции коры надпочечников (17ОН-прогестерон ≥ 6,9 нмоль/л)',
+                    'Преждевременная овариальная недостаточность (фолликулостимулирующий гормон ≥ 20 мМЕ/м)',
+                    'Аблация эндометрия',
+                    'Двухсторонняя овариоэктомия',
+                    'Аменорея'
+                ],
+                panelTitle: 'Риск хронического эндометрита:',
+                fieldLabels: {
+                    id_FSH: 'ФСГ, мМЕ/л',
+                    id_SHBG: 'ГСПГ, нмоль/л',
+                    id_endometr_thick: 'Толщина эндометрия<span class="tip" title="Толщина эндометрия определяется методом УЗИ 18-25 дни менструального цикла (в зависимости от длительности цикла)">*</span>, мм',
+                    id_CRP: 'СРБ, МЕ/л',
+                    id_LEP_ADIPOQ: 'Лептин/адипонектин'
+                },
+                submitBtn: 'Рассчитать',
+                loadingText: 'Обработка данных...',
+                resultPrefix: 'Вероятность ХЭ: ',
+                errorText: 'Ошибка сети или некорректные данные. Проверьте форму.',
+            },
+            en: {
+                docTitle: 'Chronic Endometritis Risk Assessment Calculator',
+                pageTitle: 'Chronic Endometritis Risk Assessment Calculator',
+                introText: 'This calculator is intended for use in patients whose clinical and laboratory parameters meet the following criteria:',
+                criteria1: 'Age 18–45 years',
+                criteria2: 'Normal or overweight body mass index (18.5 ≤ BMI ≤ 29.9 kg/m2)',
+                criteria3: 'Absence of the following conditions and states:',
+                subCriteria: [
+                    'Hyperandrogenemia',
+                    'Hyperprolactinemia (prolactin ≥ 726 mIU/L)',
+                    'Hypothyroidism (thyroid-stimulating hormone ≥ 4 mIU/mL)',
+                    'Non-classic congenital adrenal hyperplasia (17OH-progesterone ≥ 6.9 nmol/L)',
+                    'Premature ovarian insufficiency (follicle-stimulating hormone ≥ 20 mIU/mL)',
+                    'Endometrial ablation',
+                    'Bilateral oophorectomy',
+                    'Amenorrhea'
+                ],
+                panelTitle: 'Chronic Endometritis Risk:',
+                fieldLabels: {
+                    id_FSH: 'FSH, mIU/L',
+                    id_SHBG: 'SHBG, nmol/L',
+                    id_endometr_thick: 'Endometrial thickness<span class="tip" title="Endometrial thickness is determined by ultrasound on days 18–25 of the menstrual cycle (depending on cycle length).">*</span>, mm',
+                    id_CRP: 'CRP, IU/L',
+                    id_LEP_ADIPOQ: 'Leptin/Adiponectin'
+                },
+                submitBtn: 'Calculate',
+                loadingText: 'Processing data...',
+                resultPrefix: 'Probability of CE: ',
+                errorText: 'Network error or incorrect data. Check the form.',
+            }
+        };
+
+        let currentLang = 'ru';
+
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            document.getElementById('html-root').lang = lang;
+            document.getElementById('page-title-tag').textContent = t.docTitle;
+            document.getElementById('page-title').textContent = t.pageTitle;
+            document.getElementById('intro-text').textContent = t.introText;
+            document.getElementById('criteria-1').textContent = t.criteria1;
+            document.getElementById('criteria-2').textContent = t.criteria2;
+            document.getElementById('criteria-3-text').textContent = t.criteria3;
+
+            const subList = document.getElementById('sub-criteria-list');
+            subList.innerHTML = '';
+            t.subCriteria.forEach(function (item) {
+                const li = document.createElement('li');
+                li.textContent = item;
+                subList.appendChild(li);
+            });
+
+            document.getElementById('panel-title').textContent = t.panelTitle;
+
+            Object.keys(t.fieldLabels).forEach(function (id) {
+                const label = document.querySelector('label[for="' + id + '"]');
+                if (label) label.innerHTML = t.fieldLabels[id];
+            });
+
+            document.getElementById('submit-btn').textContent = t.submitBtn;
+            document.getElementById('loading-text').textContent = t.loadingText;
+
+            document.querySelectorAll('.lang-btn').forEach(function (btn) {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            currentLang = lang;
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { applyLanguage(btn.dataset.lang); });
+        });
+
+        applyLanguage('ru');
+
+        // ---------- Prediction logic ----------
         const form = document.getElementById('ml_model-form');
         const submitBtn = document.getElementById('submit-btn');
         const loadingDiv = document.getElementById('ml_model-loading');
         const resultDiv = document.getElementById('ml_model-result');
 
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', function (event) {
             event.preventDefault();
             make_prediction();
         });
@@ -185,17 +430,14 @@
 
         function showResult(message, type) {
             resultDiv.textContent = message;
-            // Устанавливаем соответствующий класс (result-low, result-high, result-error)
-            resultDiv.className = `result-container result-${type}`;
+            resultDiv.className = 'result-container result-' + type;
             resultDiv.style.display = 'block';
         }
 
         function make_prediction() {
-            // FormData автоматически собирает все поля формы (по их атрибутам name)
             const formData = new FormData(form);
             const params = new URLSearchParams();
-            
-            // Исключаем csrf_token из URL-параметров GET-запроса, он там не нужен
+
             for (const [key, value] of formData.entries()) {
                 if (key !== 'csrfmiddlewaretoken') {
                     params.append(key, value);
@@ -204,25 +446,22 @@
 
             setUIState(true);
 
-            fetch(`/chronic_endometritis_ml_model/?${params.toString()}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Server error");
+            fetch('/chronic_endometritis_ml_model/?' + params.toString())
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Server error');
                     return response.json();
                 })
-                .then(data => {
+                .then(function (data) {
                     const probability = (data.probability[0][1] * 100).toFixed(2);
                     const isHigh = probability >= 70;
-                    
-                    const message = `The probability of CE: ${probability}%`;
-                    const type = isHigh ? 'high' : 'low';
-                    
-                    showResult(message, type);
+                    const t = translations[currentLang];
+                    showResult(t.resultPrefix + probability + '%', isHigh ? 'high' : 'low');
                 })
-                .catch(error => {
-                    console.error("Prediction error:", error);
-                    showResult("Network error or incorrect data. Check the form.", 'error');
+                .catch(function (error) {
+                    console.error('Prediction error:', error);
+                    showResult(translations[currentLang].errorText, 'error');
                 })
-                .finally(() => {
+                .finally(function () {
                     setUIState(false);
                 });
         }
