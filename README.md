@@ -1,7 +1,7 @@
 # Chronic Endometritis Application
 
 Веб-калькулятор на Django с моделью машинного обучения (XGBoost).  
-После запуска приложение доступно по пути `/chronic_endometritis_app`.
+После запуска приложение доступно по пути `/chronic-endometritis-app/`.
 
 ---
 
@@ -107,7 +107,7 @@ sudo systemctl start gunicorn_chronic
 
 Ключевые блоки для добавления в существующий `server`-блок:
 
-**Приложение** — только `/chronic_endometritis_app`, не `/` (иначе сломаются другие приложения):
+**Приложение** — только `/chronic_endometritis_app/`, не `/` (иначе сломаются другие приложения):
 ```nginx
 location /chronic_endometritis_app {
     include proxy_params;
@@ -152,13 +152,13 @@ sudo systemctl reload nginx
 После запуска Gunicorn и Nginx откройте в браузере:
 
 ```
-http://84.237.24.66/chronic_endometritis_app
+http://84.237.24.66/chronic_endometritis_app/
 ```
 
 или
 
 ```
-http://dev.sbamsr.irk.ru/chronic_endometritis_app
+http://dev.sbamsr.irk.ru/chronic_endometritis_app/
 ```
 
 ---
