@@ -152,13 +152,13 @@ sudo systemctl reload nginx
 После запуска Gunicorn и Nginx откройте в браузере:
 
 ```
-http://84.237.24.66/chronic_endometritis_app/
+http://84.237.24.66/chronic-endometritis-app/
 ```
 
 или
 
 ```
-http://dev.sbamsr.irk.ru/chronic_endometritis_app/
+http://dev.sbamsr.irk.ru/chronic-endometritis-app/
 ```
 
 ---
